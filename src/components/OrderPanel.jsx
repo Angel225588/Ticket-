@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { tables, STAGES, STAGE_LABELS, STAGE_COLORS, STAGE_ORDER, formatTime } from '../data/tables';
 import { useApp } from '../context/AppContext';
 
@@ -55,12 +55,140 @@ function StageTimeline({ order }) {
   );
 }
 
+// Reusable search-based menu picker
+function MenuSearch({ menu, onAddItem }) {
+  const [search, setSearch] = useState('');
+  const [activeCategory, setActiveCategory] = useState(null);
+  const searchRef = useRef(null);
+
+  const allItems = useMemo(
+    () => menu.categories.flatMap((cat) => cat.items.map((item) => ({ ...item, category: cat.name }))),
+    [menu]
+  );
+
+  const filtered = useMemo(() => {
+    if (!search.trim()) return null;
+    const q = search.toLowerCase().trim();
+    return allItems.filter(
+      (item) =>
+        item.name.toLowerCase().includes(q) ||
+        item.category.toLowerCase().includes(q) ||
+        (item.description && item.description.toLowerCase().includes(q))
+    );
+  }, [search, allItems]);
+
+  const categoriesWithItems = useMemo(() => {
+    if (activeCategory) {
+      return menu.categories.filter((c) => c.id === activeCategory);
+    }
+    return menu.categories.filter((c) => c.items.length > 0);
+  }, [menu, activeCategory]);
+
+  return (
+    <div className="space-y-2">
+      {/* Search input */}
+      <div className="relative">
+        <input
+          ref={searchRef}
+          type="text"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search products... (ex: burger, frites, spritz)"
+          className="w-full pl-9 pr-8 py-2.5 border-2 border-gray-200 rounded-lg text-sm
+            focus:border-parissy-navy focus:outline-none transition-colors"
+        />
+        <svg className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        {search && (
+          <button
+            onClick={() => { setSearch(''); searchRef.current?.focus(); }}
+            className="absolute right-2 top-2 text-gray-400 hover:text-gray-600 text-lg leading-none"
+          >
+            &times;
+          </button>
+        )}
+      </div>
+
+      {/* Search results */}
+      {filtered !== null ? (
+        <div>
+          <p className="text-xs text-gray-500 mb-1">{filtered.length} result{filtered.length !== 1 ? 's' : ''}</p>
+          {filtered.length === 0 ? (
+            <p className="text-sm text-gray-400 italic py-4 text-center">No items match "{search}"</p>
+          ) : (
+            <div className="grid grid-cols-2 gap-1 max-h-60 overflow-y-auto custom-scroll">
+              {filtered.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => onAddItem(item)}
+                  className="text-left p-2 rounded bg-white border hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                >
+                  <div className="text-sm font-medium leading-tight">{item.name}</div>
+                  <div className="text-[10px] text-gray-400">{item.category}</div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : (
+        <>
+          {/* Category tabs */}
+          <div className="flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
+            <button
+              onClick={() => setActiveCategory(null)}
+              className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
+                ${!activeCategory ? 'bg-parissy-navy text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+            >
+              All
+            </button>
+            {menu.categories.filter((c) => c.items.length > 0).map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(activeCategory === cat.id ? null : cat.id)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors
+                  ${activeCategory === cat.id ? 'bg-parissy-navy text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Category items */}
+          <div className="space-y-3 max-h-60 overflow-y-auto custom-scroll">
+            {categoriesWithItems.map((cat) => (
+              <div key={cat.id}>
+                {!activeCategory && (
+                  <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider sticky top-0 bg-gray-50 py-1">
+                    {cat.name}
+                  </h4>
+                )}
+                <div className="grid grid-cols-2 gap-1 mt-1">
+                  {cat.items.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => onAddItem(item)}
+                      className="text-left p-2 rounded bg-white border hover:bg-blue-50 hover:border-blue-300 transition-colors"
+                    >
+                      <div className="text-sm font-medium leading-tight">{item.name}</div>
+                      {item.price > 0 && <div className="text-xs text-gray-500">{item.price.toFixed(2)}€</div>}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function NewOrderForm({ tableId, onCreated, onCancel }) {
   const { state, dispatch } = useApp();
   const [guests, setGuests] = useState(1);
   const [selectedItems, setSelectedItems] = useState([]);
   const [notes, setNotes] = useState('');
-  const [showMenu, setShowMenu] = useState(false);
 
   // OCR state
   const [ocrLoading, setOcrLoading] = useState(false);
@@ -80,7 +208,6 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
       await worker.terminate();
       setOcrText(data.text);
 
-      // Try to parse items from OCR text
       const lines = data.text.split('\n').filter((l) => l.trim());
       const allMenuItems = state.menu.categories.flatMap((c) => c.items);
       const foundItems = [];
@@ -100,10 +227,8 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
         setSelectedItems((prev) => [...prev, ...foundItems]);
       }
 
-      // Try to parse guest count
       const gstMatch = data.text.match(/GST\s*(\d+)/i);
       if (gstMatch) setGuests(parseInt(gstMatch[1]));
-
     } catch (err) {
       console.error('OCR failed:', err);
       setOcrText('OCR failed - please add items manually');
@@ -130,17 +255,13 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
   const handleCreate = () => {
     dispatch({
       type: 'CREATE_ORDER',
-      payload: {
-        tableId,
-        guests,
-        items: selectedItems,
-        notes,
-      },
+      payload: { tableId, guests, items: selectedItems, notes },
     });
     onCreated();
   };
 
   const table = tables.find((t) => t.id === tableId);
+  const total = selectedItems.reduce((sum, item) => sum + (item.price || 0) * (item.quantity || 1), 0);
 
   return (
     <div className="flex flex-col h-full">
@@ -171,7 +292,6 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
 
         {/* OCR Scanner */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Scan Ticket</label>
           <input
             ref={fileInputRef}
             type="file"
@@ -183,23 +303,23 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={ocrLoading}
-            className="touch-btn w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600
-              hover:border-parissy-navy hover:text-parissy-navy transition-colors"
+            className="touch-btn w-full py-2.5 border-2 border-dashed border-gray-300 rounded-lg text-gray-600
+              hover:border-parissy-navy hover:text-parissy-navy transition-colors text-sm"
           >
             {ocrLoading ? (
-              <span className="flex items-center gap-2">
-                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                 </svg>
                 Reading ticket...
               </span>
             ) : (
-              <span>📷 Take Photo / Upload Ticket</span>
+              '📷 Scan Ticket'
             )}
           </button>
           {ocrText && (
-            <pre className="mt-2 p-2 bg-gray-50 rounded text-xs text-gray-500 max-h-24 overflow-y-auto">
+            <pre className="mt-1 p-2 bg-gray-50 rounded text-xs text-gray-500 max-h-20 overflow-y-auto">
               {ocrText}
             </pre>
           )}
@@ -209,7 +329,7 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
         {selectedItems.length > 0 && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Order Items ({selectedItems.length})
+              Order ({selectedItems.length} item{selectedItems.length !== 1 ? 's' : ''})
             </label>
             <div className="space-y-1">
               {selectedItems.map((item, i) => (
@@ -218,46 +338,28 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
                     {item.quantity > 1 && <span className="text-parissy-navy font-bold">{item.quantity}x </span>}
                     {item.name}
                   </span>
-                  <span className="text-xs text-gray-500">{item.price?.toFixed(2)}€</span>
+                  {item.price > 0 && (
+                    <span className="text-xs text-gray-500">{(item.price * (item.quantity || 1)).toFixed(2)}€</span>
+                  )}
                   <button
                     onClick={() => removeSelectedItem(i)}
                     className="text-red-400 hover:text-red-600 text-lg leading-none"
                   >&times;</button>
                 </div>
               ))}
+              {total > 0 && (
+                <div className="text-right text-sm font-bold text-gray-700 pt-1 border-t">
+                  Total: {total.toFixed(2)}€
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* Menu items picker */}
+        {/* Search + Menu picker */}
         <div>
-          <button
-            onClick={() => setShowMenu(!showMenu)}
-            className="touch-btn w-full py-2 bg-gray-100 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-200"
-          >
-            {showMenu ? '▲ Hide Menu' : '▼ Add from Menu'}
-          </button>
-          {showMenu && (
-            <div className="mt-2 space-y-3">
-              {state.menu.categories.map((cat) => (
-                <div key={cat.id}>
-                  <h4 className="text-xs font-bold uppercase text-gray-500 tracking-wider">{cat.name}</h4>
-                  <div className="mt-1 grid grid-cols-2 gap-1">
-                    {cat.items.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => addMenuItem(item)}
-                        className="text-left p-2 rounded bg-white border hover:bg-blue-50 hover:border-blue-300 transition-colors"
-                      >
-                        <div className="text-sm font-medium">{item.name}</div>
-                        <div className="text-xs text-gray-500">{item.price?.toFixed(2)}€</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <label className="block text-sm font-medium text-gray-700 mb-1">Add Items</label>
+          <MenuSearch menu={state.menu} onAddItem={addMenuItem} />
         </div>
 
         {/* Notes */}
@@ -267,7 +369,7 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Bien cuit, sans oignons, allergies..."
-            className="w-full p-2 border rounded-lg text-sm resize-none h-20"
+            className="w-full p-2 border rounded-lg text-sm resize-none h-16"
           />
         </div>
       </div>
@@ -279,7 +381,7 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
           className="touch-btn w-full py-3 bg-parissy-navy text-white rounded-lg font-bold text-lg
             hover:bg-blue-800 active:bg-blue-900 transition-colors"
         >
-          Create Order
+          Open Table {tableId}
         </button>
       </div>
     </div>
@@ -287,9 +389,8 @@ function NewOrderForm({ tableId, onCreated, onCancel }) {
 }
 
 function OrderDetail({ order, onClose }) {
-  const { dispatch, getNextStage, overdueOrders } = useApp();
+  const { dispatch, getNextStage, overdueOrders, state } = useApp();
   const [showAddItems, setShowAddItems] = useState(false);
-  const { state } = useApp();
   const isOverdue = overdueOrders.has(order.id);
 
   const nextStage = getNextStage(order.currentStage);
@@ -359,7 +460,6 @@ function OrderDetail({ order, onClose }) {
                   → {STAGE_LABELS[nextStage]}
                 </button>
               )}
-              {/* Skip-to buttons for stages after next */}
               {STAGE_ORDER.slice(STAGE_ORDER.indexOf(order.currentStage) + 2).map((stage) => (
                 <button
                   key={stage}
@@ -392,11 +492,19 @@ function OrderDetail({ order, onClose }) {
             </label>
             <button
               onClick={() => setShowAddItems(!showAddItems)}
-              className="text-xs text-parissy-navy font-medium hover:underline"
+              className="text-xs text-parissy-navy font-bold px-2 py-1 rounded bg-blue-50 hover:bg-blue-100"
             >
-              + Add
+              {showAddItems ? '✕ Close' : '+ Add Items'}
             </button>
           </div>
+
+          {/* Inline search when adding items to existing order */}
+          {showAddItems && (
+            <div className="mb-3 p-2 bg-gray-50 rounded-lg border">
+              <MenuSearch menu={state.menu} onAddItem={handleAddItem} />
+            </div>
+          )}
+
           {order.items.length === 0 ? (
             <p className="text-sm text-gray-400 italic">No items added</p>
           ) : (
@@ -410,36 +518,19 @@ function OrderDetail({ order, onClose }) {
                       <span className="text-gray-500 text-xs block">{item.modifications}</span>
                     )}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {((item.price || 0) * (item.quantity || 1)).toFixed(2)}€
-                  </span>
+                  {item.price > 0 && (
+                    <span className="text-xs text-gray-500">
+                      {((item.price || 0) * (item.quantity || 1)).toFixed(2)}€
+                    </span>
+                  )}
                   <button onClick={() => handleRemoveItem(i)} className="text-red-400 hover:text-red-600">&times;</button>
                 </div>
               ))}
-              <div className="text-right text-sm font-bold text-gray-700 pt-1 border-t">
-                Total: {total.toFixed(2)}€
-              </div>
-            </div>
-          )}
-
-          {showAddItems && (
-            <div className="mt-2 space-y-2 border-t pt-2">
-              {state.menu.categories.map((cat) => (
-                <div key={cat.id}>
-                  <h4 className="text-xs font-bold uppercase text-gray-400">{cat.name}</h4>
-                  <div className="grid grid-cols-2 gap-1 mt-1">
-                    {cat.items.map((item) => (
-                      <button
-                        key={item.id}
-                        onClick={() => handleAddItem(item)}
-                        className="text-left p-1.5 rounded bg-gray-50 border hover:bg-blue-50 text-xs"
-                      >
-                        {item.name} - {item.price?.toFixed(2)}€
-                      </button>
-                    ))}
-                  </div>
+              {total > 0 && (
+                <div className="text-right text-sm font-bold text-gray-700 pt-1 border-t">
+                  Total: {total.toFixed(2)}€
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
