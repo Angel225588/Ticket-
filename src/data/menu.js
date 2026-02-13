@@ -57,23 +57,67 @@ export const defaultMenu = {
       id: 'desserts',
       name: 'Desserts',
       items: [
-        // Placeholder - send screenshot of Desserts tab to fill in
-        { id: 'd1', name: '(Send Desserts screenshot)', price: 0, description: 'Tap Edit to add your desserts' },
+        { id: 'd1', name: 'Cacao Criollo', price: 0, description: '' },
+        { id: 'd2', name: 'Café Gourmand', price: 0, description: '' },
+        { id: 'd3', name: 'Dakatine', price: 0, description: '' },
+        { id: 'd4', name: 'Dessert du Jour', price: 0, description: '' },
+        { id: 'd5', name: 'Fraise', price: 0, description: '' },
+        { id: 'd6', name: 'Fromage du Jour', price: 0, description: '' },
+        { id: 'd7', name: 'Glaces et Sorbets', price: 0, description: '' },
+        { id: 'd8', name: 'LGCF Assiette Fruits Découpés', price: 0, description: '' },
+        { id: 'd9', name: 'LGCF Crème Brûlée Basilic', price: 0, description: '' },
+        { id: 'd10', name: 'LGCF Paris Brest', price: 0, description: '' },
+        { id: 'd11', name: 'LGCF Profiterole', price: 0, description: '' },
+        { id: 'd12', name: 'Pavlova', price: 0, description: '' },
       ],
     },
     {
-      id: 'snacks',
-      name: 'Snacks',
+      id: 'salades',
+      name: 'Salades',
       items: [
-        // Placeholder - send screenshot of Snacks tab to fill in
-        { id: 's1', name: '(Send Snacks screenshot)', price: 0, description: 'Tap Edit to add your snacks' },
+        { id: 'sa1', name: 'Salade du Chef', price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'sandwich',
+      name: 'Sandwich',
+      items: [
+        { id: 'sw1', name: 'Bagel au Saumon', price: 0, description: '' },
+        { id: 'sw2', name: "Club d'Issy Poulet", price: 0, description: '' },
+        { id: 'sw3', name: 'Croque à la Tartufata', price: 0, description: '' },
+        { id: 'sw4', name: "O'Burger", price: 0, description: '' },
+        { id: 'sw5', name: "Par'Issy Burger", price: 0, description: '' },
+        { id: 'sw6', name: "Par'Issy Cheeseburger", price: 0, description: '' },
+        { id: 'sw7', name: "Par'Issy Veggie Burger", price: 0, description: '' },
+        { id: 'sw8', name: "Par'Issy Veggie Cheeseburger", price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'a-partager',
+      name: 'A Partager',
+      items: [
+        { id: 'ap1', name: 'Bringelle à la Libanaise', price: 0, description: '' },
+        { id: 'ap2', name: 'Crevettes Crispy Spicy', price: 0, description: '' },
+        { id: 'ap3', name: 'Croquettes de Fromage Tartufata', price: 0, description: '' },
+        { id: 'ap4', name: 'Fromage du Jour', price: 0, description: '' },
+        { id: 'ap5', name: 'Houmous Traditionnel', price: 0, description: '' },
+        { id: 'ap6', name: 'Planche de Charcuterie', price: 0, description: '' },
+        { id: 'ap7', name: 'Planche de Fromages', price: 0, description: '' },
+        { id: 'ap8', name: 'Planche Mixte', price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'viandes',
+      name: 'Viandes',
+      items: [
+        { id: 'v1', name: 'Pâtes BIO', price: 0, description: '' },
+        { id: 'v2', name: 'Ravioles', price: 0, description: '' },
       ],
     },
     {
       id: 'boissons',
       name: 'Boissons',
       items: [
-        // Placeholder - send screenshot of drinks to fill in
         { id: 'b1', name: 'Café / Espresso', price: 0, description: '' },
         { id: 'b2', name: 'Thé', price: 0, description: '' },
         { id: 'b3', name: 'Eau Minérale', price: 0, description: '' },
