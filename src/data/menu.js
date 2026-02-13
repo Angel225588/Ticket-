@@ -104,6 +104,8 @@ export const defaultMenu = {
         { id: 'ap6', name: 'Planche de Charcuterie', price: 0, description: '' },
         { id: 'ap7', name: 'Planche de Fromages', price: 0, description: '' },
         { id: 'ap8', name: 'Planche Mixte', price: 0, description: '' },
+        { id: 'ap9', name: 'Rillette de Thon au Wasabi', price: 0, description: '' },
+        { id: 'ap10', name: 'Volaille Satay', price: 0, description: '' },
       ],
     },
     {
@@ -115,12 +117,78 @@ export const defaultMenu = {
       ],
     },
     {
-      id: 'boissons',
-      name: 'Boissons',
+      id: 'eaux',
+      name: 'Eaux',
       items: [
-        { id: 'b1', name: 'Café / Espresso', price: 0, description: '' },
-        { id: 'b2', name: 'Thé', price: 0, description: '' },
-        { id: 'b3', name: 'Eau Minérale', price: 0, description: '' },
+        { id: 'ea1', name: 'Badoit 1/2', price: 0, description: '' },
+        { id: 'ea2', name: 'Badoit 33cl', price: 0, description: '' },
+        { id: 'ea3', name: 'Badoit L', price: 0, description: '' },
+        { id: 'ea4', name: 'Evian 1/2', price: 0, description: '' },
+        { id: 'ea5', name: 'Evian 33cl', price: 0, description: '' },
+        { id: 'ea6', name: 'Evian L', price: 0, description: '' },
+        { id: 'ea7', name: 'San Pellegrino L', price: 0, description: '' },
+        { id: 'ea8', name: 'Sirop Fraise', price: 0, description: '' },
+        { id: 'ea9', name: 'Sirop Grenadine', price: 0, description: '' },
+        { id: 'ea10', name: 'Sirop Menthe', price: 0, description: '' },
+        { id: 'ea11', name: 'Sirop Pêche', price: 0, description: '' },
+        { id: 'ea12', name: 'Vittel L', price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'softs',
+      name: 'Softs',
+      items: [
+        { id: 'so1', name: 'Fever-Tree Ginger Ale', price: 0, description: '' },
+        { id: 'so2', name: 'Fever-Tree Ginger Beer', price: 0, description: '' },
+        { id: 'so3', name: 'Fever-Tree Tonic Water', price: 0, description: '' },
+        { id: 'so4', name: 'Lipton Ice Tea', price: 0, description: '' },
+        { id: 'so5', name: 'Lorina', price: 0, description: '' },
+        { id: 'so6', name: 'Open Soft', price: 0, description: '' },
+        { id: 'so7', name: 'Orangina', price: 0, description: '' },
+        { id: 'so8', name: 'Pepsi Cola', price: 0, description: '' },
+        { id: 'so9', name: 'Pepsi Max', price: 0, description: '' },
+        { id: 'so10', name: 'Red Bull', price: 0, description: '' },
+        { id: 'so11', name: 'Red Bull Sans Sucres', price: 0, description: '' },
+        { id: 'so12', name: 'Schweppes Agrum', price: 0, description: '' },
+        { id: 'so13', name: 'Seven Up', price: 0, description: '' },
+        { id: 'so14', name: 'Softs Happy Hour', price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'jus',
+      name: 'Jus',
+      items: [
+        // Send Jus + Jus Pressé screenshots to fill in
+        { id: 'j1', name: 'Café / Espresso', price: 0, description: '' },
+        { id: 'j2', name: 'Thé', price: 0, description: '' },
+      ],
+    },
+    {
+      id: 'cocktails',
+      name: 'Cocktails',
+      items: [
+        // Send Cocktails screenshot to fill in
+      ],
+    },
+    {
+      id: 'bieres',
+      name: 'Bières',
+      items: [
+        // Send Bières screenshot to fill in
+      ],
+    },
+    {
+      id: 'alcools',
+      name: 'Alcools',
+      items: [
+        // Send Alcools screenshot to fill in
+      ],
+    },
+    {
+      id: 'vins',
+      name: 'Vins',
+      items: [
+        // Send Vins screenshot to fill in
       ],
     },
   ],
