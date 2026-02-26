@@ -35,3 +35,13 @@ html, body, #root {
 .overdue {
   animation: overdue-pulse 1.5s ease-in-out infinite;
 }
+
+/* Check-in confirmation animation */
+@keyframes bounce-once {
+  0% { transform: scale(0.9); opacity: 0; }
+  50% { transform: scale(1.02); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-bounce-once {
+  animation: bounce-once 0.4s ease-out;
+}

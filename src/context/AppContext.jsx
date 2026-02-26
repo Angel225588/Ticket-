@@ -34,6 +34,14 @@ const initialState = {
   menu: defaultMenu,
   alarmMinutes: 10,
   alarmEnabled: true,
+  checkin: {
+    guests: [],
+    date: null,
+    emergencyContacts: {
+      reception: '0',
+      supervisor: '',
+    },
+  },
 };
 
 function reducer(state, action) {
@@ -124,6 +132,88 @@ function reducer(state, action) {
 
     case 'UPDATE_SETTINGS': {
       return { ...state, ...action.payload };
+    }
+
+    // Check-in actions
+    case 'SET_CHECKIN_GUESTS': {
+      return {
+        ...state,
+        checkin: {
+          ...state.checkin,
+          guests: action.payload.guests,
+          date: action.payload.date,
+        },
+      };
+    }
+
+    case 'CHECKIN_GUEST': {
+      const { guestId, count } = action.payload;
+      const guests = state.checkin.guests.map((g) =>
+        g.id === guestId
+          ? {
+              ...g,
+              checkedInCount: g.checkedInCount + count,
+              checkedInEvents: [...g.checkedInEvents, { time: Date.now(), count }],
+            }
+          : g
+      );
+      return { ...state, checkin: { ...state.checkin, guests } };
+    }
+
+    case 'UNDO_CHECKIN': {
+      const guests = state.checkin.guests.map((g) => {
+        if (g.id !== action.payload.guestId) return g;
+        const events = [...g.checkedInEvents];
+        const lastEvent = events.pop();
+        return {
+          ...g,
+          checkedInCount: Math.max(0, g.checkedInCount - (lastEvent?.count || 0)),
+          checkedInEvents: events,
+        };
+      });
+      return { ...state, checkin: { ...state.checkin, guests } };
+    }
+
+    case 'TOGGLE_VIP': {
+      const guests = state.checkin.guests.map((g) =>
+        g.id === action.payload.guestId ? { ...g, isVip: !g.isVip } : g
+      );
+      return { ...state, checkin: { ...state.checkin, guests } };
+    }
+
+    case 'UPDATE_EMERGENCY_CONTACTS': {
+      return {
+        ...state,
+        checkin: { ...state.checkin, emergencyContacts: action.payload },
+      };
+    }
+
+    case 'RESET_CHECKIN': {
+      return {
+        ...state,
+        checkin: { ...initialState.checkin },
+      };
+    }
+
+    case 'ADD_CHECKIN_GUEST': {
+      const newGuest = {
+        ...action.payload,
+        id: generateId(),
+        checkedInCount: 0,
+        checkedInEvents: [],
+      };
+      return {
+        ...state,
+        checkin: {
+          ...state.checkin,
+          guests: [...state.checkin.guests, newGuest],
+        },
+      };
+    }
+
+    case 'REMOVE_CHECKIN_GUEST': {
+      const guests = state.checkin.guests.filter((g) => g.id !== action.payload.guestId);
+      return { ...state, checkin: { ...state.checkin, guests } };
     }
 
     default:

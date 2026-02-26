@@ -4,6 +4,7 @@ import TableMap from './components/TableMap';
 import OrderPanel from './components/OrderPanel';
 import OrdersList from './components/OrdersList';
 import MenuPage from './components/MenuPage';
+import CheckInPage from './components/CheckInPage';
 
 function Header({ view, setView, alarmEnabled, onToggleAlarm, onRequestNotifications }) {
   return (
@@ -12,6 +13,7 @@ function Header({ view, setView, alarmEnabled, onToggleAlarm, onRequestNotificat
 
       <nav className="flex gap-1">
         {[
+          { id: 'checkin', label: 'Check-In', icon: '🛎️' },
           { id: 'map', label: 'Tables', icon: '🗺️' },
           { id: 'orders', label: 'Orders', icon: '📋' },
           { id: 'menu', label: 'Menu', icon: '📖' },
@@ -51,7 +53,7 @@ function Header({ view, setView, alarmEnabled, onToggleAlarm, onRequestNotificat
 
 function AppContent() {
   const { state, dispatch, requestNotificationPermission } = useApp();
-  const [view, setView] = useState('map');
+  const [view, setView] = useState('checkin');
   const [selectedTable, setSelectedTable] = useState(null);
 
   // Close panel on escape key
@@ -84,6 +86,7 @@ function AppContent() {
         {/* Main content */}
         <div className={`flex-1 flex flex-col overflow-hidden transition-all duration-300
           ${selectedTable ? 'hidden sm:flex' : 'flex'}`}>
+          {view === 'checkin' && <CheckInPage />}
           {view === 'map' && <TableMap onSelectTable={setSelectedTable} />}
           {view === 'orders' && <OrdersList onSelectTable={setSelectedTable} />}
           {view === 'menu' && <MenuPage />}
